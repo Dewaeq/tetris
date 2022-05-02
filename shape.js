@@ -1,14 +1,16 @@
-class Shape {
+import { gridY } from "./sketch.js";
+
+export class Shape {
     constructor(type, grid) {
         this.grid = grid;
         this.blocks = [...type.blocks];
         this.color = type.color;
         this.rotationPoint = type.rotationPoint.copy();
-        this.position = createVector(4, 0);
+        this.position = p5.createVector(4, 0);
     }
 
     blockPos(block) {
-        return p5.Vector.add(block, this.position);
+        return p5.createVector(block.x + this.position.x, block.y + this.position.y);
     }
 
     canRotate(cw = true) {
@@ -57,7 +59,7 @@ class Shape {
         this.grid.removeShape(this);
 
         for (const block of this.blocks) {
-            if (this.grid.contains(p5.Vector.add(this.blockPos(block), [0, 1]))) {
+            if (this.grid.contains(p5.createVector(this.blockPos.x, this.blockPos.y + 1))) {
                 result = false;
                 break;
             }
@@ -80,7 +82,7 @@ class Shape {
 
         this.grid.removeShape(this);
         for (const block of this.blocks) {
-            let blockPos = this.blockPos(p5.Vector.add(block, [offset]));
+            let blockPos = this.blockPos(p5.createVector(block.x + offset, block.y));
             if (this.grid.contains(blockPos) || !this.grid.inBounds(blockPos)) {
                 result = false;
                 break;
@@ -100,7 +102,7 @@ class Shape {
 
     rotatedBlockPosition(block, cw) {
         let result = block.copy();
-        let transl = createVector(result.x - this.rotationPoint.x, result.y - this.rotationPoint.y);
+        let transl = p5.createVector(result.x - this.rotationPoint.x, result.y - this.rotationPoint.y);
 
         result.x = -transl.y;
         result.y = transl.x;
@@ -128,53 +130,53 @@ class Shape {
             }
         }
 
-        return abs(minX) + abs(maxX) + 1;
+        return p5.abs(minX) + p5.abs(maxX) + 1;
     }
 }
 
-class SHAPES {
+export class SHAPES {
     static Load() {
         this.O = {
-            blocks: [createVector(0, 0), createVector(1, 0), createVector(0, 1), createVector(1, 1)],
-            color: color(255, 255, 0),
-            rotationPoint: createVector(0.5, 0.5),
+            blocks: [p5.createVector(0, 0), p5.createVector(1, 0), p5.createVector(0, 1), p5.createVector(1, 1)],
+            color: p5.color(255, 255, 0),
+            rotationPoint: p5.createVector(0.5, 0.5),
         };
         this.I = {
-            blocks: [createVector(0, 0), createVector(0, 1), createVector(0, 2), createVector(0, 3),],
-            color: color(0, 255, 255),
-            rotationPoint: createVector(0.5, 1.5),
+            blocks: [p5.createVector(0, 0), p5.createVector(0, 1), p5.createVector(0, 2), p5.createVector(0, 3),],
+            color: p5.color(0, 255, 255),
+            rotationPoint: p5.createVector(0.5, 1.5),
         };
         this.J = {
-            blocks: [createVector(1, 0), createVector(1, 1), createVector(0, 2), createVector(1, 2),],
-            color: color(0, 0, 255),
-            rotationPoint: createVector(1, 1),
+            blocks: [p5.createVector(1, 0), p5.createVector(1, 1), p5.createVector(0, 2), p5.createVector(1, 2),],
+            color: p5.color(0, 0, 255),
+            rotationPoint: p5.createVector(1, 1),
         };
         this.L = {
-            blocks: [createVector(0, 0), createVector(0, 1), createVector(0, 2), createVector(1, 2),],
-            color: color(255, 170, 0),
-            rotationPoint: createVector(0, 1),
+            blocks: [p5.createVector(0, 0), p5.createVector(0, 1), p5.createVector(0, 2), p5.createVector(1, 2),],
+            color: p5.color(255, 170, 0),
+            rotationPoint: p5.createVector(0, 1),
         };
         this.T = {
-            blocks: [createVector(1, 0), createVector(0, 1), createVector(1, 1), createVector(2, 1),],
-            color: color(153, 0, 255),
-            rotationPoint: createVector(1, 1),
+            blocks: [p5.createVector(1, 0), p5.createVector(0, 1), p5.createVector(1, 1), p5.createVector(2, 1),],
+            color: p5.color(153, 0, 255),
+            rotationPoint: p5.createVector(1, 1),
         };
         this.S = {
-            blocks: [createVector(1, 0), createVector(2, 0), createVector(0, 1), createVector(1, 1),],
-            color: color(0, 255, 0),
-            rotationPoint: createVector(1, 1),
+            blocks: [p5.createVector(1, 0), p5.createVector(2, 0), p5.createVector(0, 1), p5.createVector(1, 1),],
+            color: p5.color(0, 255, 0),
+            rotationPoint: p5.createVector(1, 1),
         };
         this.Z = {
-            blocks: [createVector(0, 0), createVector(1, 0), createVector(1, 1), createVector(2, 1),],
-            color: color(255, 0, 0),
-            rotationPoint: createVector(1, 1),
+            blocks: [p5.createVector(0, 0), p5.createVector(1, 0), p5.createVector(1, 1), p5.createVector(2, 1),],
+            color: p5.color(255, 0, 0),
+            rotationPoint: p5.createVector(1, 1),
         };
 
         this.ALL = [this.O, this.I, this.J, this.L, this.S, this.Z, this.T];
     }
 
     static Random(grid) {
-        let type = this.ALL[Math.floor(random(7))];
+        let type = this.ALL[p5.floor(p5.random(7))];
         return new Shape(type, grid);
     }
 }

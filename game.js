@@ -1,4 +1,8 @@
-class Game {
+import { Grid } from "./grid.js";
+import { SHAPES } from "./shape.js";
+import { gridY, gridX, cellSize, gridOffset } from "./sketch.js";
+
+export default class Game {
     constructor() {
         this.grid = new Grid();
         this.blocks = Array(gridY).fill(null).map(_ => Array(gridX).fill(null));
@@ -21,15 +25,15 @@ class Game {
         document.getElementById("btn-up").addEventListener("mousedown", () => this.startRotate());
         document.getElementById("btn-down").addEventListener("mousedown", () => this.startDrop());
 
-        const btn = createButton("Pause");
+        const btn = p5.createButton("Pause");
         btn.mousePressed(() => this.pause());
     }
 
     pause() {
-        if (frameRate() === 0) {
-            frameRate(60);
+        if (p5.frameRate() === 0) {
+            p5.frameRate(60);
         } else {
-            frameRate(0);
+            p5.frameRate(0);
         }
     }
 
@@ -138,18 +142,18 @@ class Game {
     }
 
     draw() {
-        background(220);
-        strokeWeight(.1);
+        p5.background(220);
+        p5.strokeWeight(.1);
 
         for (let i = 0; i <= gridX; i++) {
-            line(i * cellSize + gridOffset, 0, i * cellSize + gridOffset, gridY * cellSize);
+            p5.line(i * cellSize + gridOffset, 0, i * cellSize + gridOffset, gridY * cellSize);
         }
 
         for (let i = 0; i <= gridY; i++) {
-            line(0 + gridOffset, i * cellSize, gridX * cellSize + gridOffset, i * cellSize);
+            p5.line(0 + gridOffset, i * cellSize, gridX * cellSize + gridOffset, i * cellSize);
         }
 
-        if (frameCount % this.fallSpeed === 0) {
+        if (p5.frameCount % this.fallSpeed === 0) {
             if (this.currentShape.canDrop()) {
                 if (!this.rotating) {
                     this.currentShape.drop();
@@ -169,7 +173,7 @@ class Game {
                 this.nextShape = SHAPES.Random(this.grid);
 
                 if (!this.currentShape.canDrop()) {
-                    frameRate(0);
+                    p5.frameRate(0);
                     alert("Game Over");
                 }
             }
@@ -189,56 +193,56 @@ class Game {
             }
         }
 
-        fill("black");
-        textSize(20);
-        text(`FPS: ${floor(frameRate())}`, 0, cellSize);
-        text(`SCORE:`, 0, cellSize * 2);
-        text(`${this.score}`, 0, cellSize * 3);
+        p5.fill("black");
+        p5.textSize(20);
+        p5.text(`FPS: ${p5.floor(p5.frameRate())}`, 0, cellSize);
+        p5.text(`SCORE:`, 0, cellSize * 2);
+        p5.text(`${this.score}`, 0, cellSize * 3);
     }
 
     drawNextShape() {
-        push();
+        p5.push();
 
         let offset = this.nextShape.width() * 2;
 
-        translate(cellSize * gridX + gridOffset * 1.5, 0);
+        p5.translate(cellSize * gridX + gridOffset * 1.5, 0);
 
-        textAlign(CENTER);
-        textSize(20);
-        text("NEXT", 0, cellSize);
+        // p5.textAlign(p5.CENTER);
+        p5.textSize(20);
+        p5.text("NEXT", 0, cellSize);
 
-        pop();
+        p5.pop();
 
-        push();
+        p5.push();
 
-        translate(cellSize * gridX + gridOffset * ((offset + 1) / offset), cellSize * 0.5);
+        p5.translate(cellSize * gridX + gridOffset * ((offset + 1) / offset), cellSize * 0.5);
 
-        translate(0, cellSize);
-        fill(this.nextShape.color);
+        p5.translate(0, cellSize);
+        p5.fill(this.nextShape.color);
 
         for (const block of this.nextShape.blocks) {
-            rect(block.x * cellSize * 0.7, block.y * cellSize * 0.7, cellSize * 0.7);
+            p5.rect(block.x * cellSize * 0.7, block.y * cellSize * 0.7, cellSize * 0.7);
         }
 
-        pop();
+        p5.pop();
     }
 
     drawShape(shape) {
-        push();
-        fill(shape.color);
-        translate(cellSize * shape.position.x + gridOffset, cellSize * shape.position.y + 1 / this.fallSpeed);
+        p5.push();
+        p5.fill(shape.color);
+        p5.translate(cellSize * shape.position.x + gridOffset, cellSize * shape.position.y + 1 / this.fallSpeed);
 
         for (const block of shape.blocks) {
-            rect(block.x * cellSize, block.y * cellSize, cellSize);
+            p5.rect(block.x * cellSize, block.y * cellSize, cellSize);
         }
 
         // fill(255);
         // circle((shape.rotationPoint.x + 0.5) * cellSize, (shape.rotationPoint.y + 0.5) * cellSize, cellSize / 3);
-        pop();
+        p5.pop();
     }
 
     drawBlock(block) {
-        fill(block.color);
-        rect(block.pos.x * cellSize + gridOffset, block.pos.y * cellSize, cellSize);
+        p5.fill(block.color);
+        p5.rect(block.pos.x * cellSize + gridOffset, block.pos.y * cellSize, cellSize);
     }
 }
