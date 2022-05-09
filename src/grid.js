@@ -5,6 +5,10 @@ export class Grid {
         this.matrix = Array(gridY).fill(null).map(_ => Array(gridX).fill(false));
     }
 
+    clear() {
+        this.matrix = Array(gridY).fill(null).map(_ => Array(gridX).fill(false)); 
+    }
+
     isLine(y) {
         for (let x = 0; x < this.matrix[y].length; x++) {
             if (!this.matrix[y][x]) {

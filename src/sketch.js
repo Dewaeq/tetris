@@ -6,9 +6,8 @@ export const gridY = 20;
 export let gridOffset = 0;
 export let cellSize = 0;
 
-let game;
-
-console.log("fuck");
+/**@type {Game} */
+export let game;
 
 new p5((p5) => {
 
@@ -31,7 +30,6 @@ new p5((p5) => {
     }
 
     game = new Game();
-    game.start();
   }
 
   p5.draw = function () {
@@ -39,21 +37,11 @@ new p5((p5) => {
   }
 
   p5.keyPressed = function () {
-    if (p5.keyCode === p5.UP_ARROW) {
-      game.startRotate();
-    } else if (p5.keyCode === p5.DOWN_ARROW) {
-      game.startDrop();
-    } else if (p5.keyCode === p5.LEFT_ARROW) {
-      game.startMove(true);
-    } else if (p5.keyCode === p5.RIGHT_ARROW) {
-      game.startMove(false);
-    } else if (p5.key === " ") {
-      game.pause();
-    }
+    game.input.keyPressed();
   }
 
   p5.keyReleased = function () {
-    game.clearInterval();
+    game.input.clearInterval();
   }
 });
 

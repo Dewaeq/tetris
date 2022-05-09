@@ -7,6 +7,7 @@ export class Shape {
         this.color = type.color;
         this.rotationPoint = type.rotationPoint.copy();
         this.position = p5.createVector(4, 0);
+        this.id = type.id;
     }
 
     blockPos(block) {
@@ -59,7 +60,8 @@ export class Shape {
         this.grid.removeShape(this);
 
         for (const block of this.blocks) {
-            if (this.grid.contains(p5.createVector(this.blockPos.x, this.blockPos.y + 1))) {
+            let blockPos = this.blockPos(block);
+            if (this.grid.contains(p5.createVector(blockPos.x, blockPos.y + 1))) {
                 result = false;
                 break;
             }
@@ -137,36 +139,43 @@ export class Shape {
 export class SHAPES {
     static Load() {
         this.O = {
+            id: 0,
             blocks: [p5.createVector(0, 0), p5.createVector(1, 0), p5.createVector(0, 1), p5.createVector(1, 1)],
             color: p5.color(255, 255, 0),
             rotationPoint: p5.createVector(0.5, 0.5),
         };
         this.I = {
+            id: 1,
             blocks: [p5.createVector(0, 0), p5.createVector(0, 1), p5.createVector(0, 2), p5.createVector(0, 3),],
             color: p5.color(0, 255, 255),
             rotationPoint: p5.createVector(0.5, 1.5),
         };
         this.J = {
+            id: 2,
             blocks: [p5.createVector(1, 0), p5.createVector(1, 1), p5.createVector(0, 2), p5.createVector(1, 2),],
             color: p5.color(0, 0, 255),
             rotationPoint: p5.createVector(1, 1),
         };
         this.L = {
+            id: 3,
             blocks: [p5.createVector(0, 0), p5.createVector(0, 1), p5.createVector(0, 2), p5.createVector(1, 2),],
             color: p5.color(255, 170, 0),
             rotationPoint: p5.createVector(0, 1),
         };
         this.T = {
+            id: 4,
             blocks: [p5.createVector(1, 0), p5.createVector(0, 1), p5.createVector(1, 1), p5.createVector(2, 1),],
             color: p5.color(153, 0, 255),
             rotationPoint: p5.createVector(1, 1),
         };
         this.S = {
+            id: 5,
             blocks: [p5.createVector(1, 0), p5.createVector(2, 0), p5.createVector(0, 1), p5.createVector(1, 1),],
             color: p5.color(0, 255, 0),
             rotationPoint: p5.createVector(1, 1),
         };
         this.Z = {
+            id: 6,
             blocks: [p5.createVector(0, 0), p5.createVector(1, 0), p5.createVector(1, 1), p5.createVector(2, 1),],
             color: p5.color(255, 0, 0),
             rotationPoint: p5.createVector(1, 1),
