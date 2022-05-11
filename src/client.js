@@ -3,8 +3,7 @@ import { Shape, SHAPES } from "./shape.js";
 import { game } from "./sketch.js";
 
 
-// const socket = io("http://192.168.0.190:3030");
-const socket = io("https://9bbd-2a02-1812-1435-f00-687b-9c44-c9f0-9256.ngrok.io");
+const socket = io("https://tetris-server-dewaeq.herokuapp.com/");
 export let allUsers = {};
 
 const userName = prompt("Username:");
