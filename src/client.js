@@ -3,8 +3,8 @@ import { Shape, SHAPES } from "./shape.js";
 import { game } from "./sketch.js";
 
 
-const socket = io("http://192.168.0.190:3030");
-// const socket = io("https://9982-2a02-1812-1435-f00-751a-fbb-9f12-c2ff.ngrok.io");
+// const socket = io("http://192.168.0.190:3030");
+const socket = io("https://9bbd-2a02-1812-1435-f00-687b-9c44-c9f0-9256.ngrok.io");
 export let allUsers = {};
 
 const userName = prompt("Username:");
@@ -20,12 +20,12 @@ while (roomCode === null) {
 socket.emit("joinRoom", { code: roomCode, userName: userName });
 
 export const drop = () => {
-    game.currentShape.drop();
-    game.checkGrid();
-
     socket.emit("update", {
         type: "DROP",
     });
+
+    game.currentShape.drop();
+    game.checkGrid();
 };
 
 export const rotate = () => {
@@ -37,6 +37,11 @@ export const rotate = () => {
 }
 
 export const move = (left) => {
+    if (!game.turn) {
+        console.error("move unallowed: not our turn!");
+        return;
+    }
+
     game.currentShape.move(left);
 
     socket.emit("update", {
@@ -47,7 +52,6 @@ export const move = (left) => {
 
 export const setNextShape = (id) => {
     game.setNextShape(id);
-    game.turn = !game.turn;
 
     socket.emit("update", {
         type: "NEXT_SHAPE",
@@ -91,12 +95,9 @@ socket.on("start", (data) => {
 });
 
 socket.on("update", (update) => {
-    console.log(update.type);
     switch (update.type) {
         case "NEXT_SHAPE":
             game.setNextShape(update.shapeId);
-            game.turn = !game.turn;
-            console.log("starting turn");
             break;
         case "DROP":
             game.currentShape.drop();

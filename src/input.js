@@ -15,22 +15,38 @@ export class Input {
         /** @type {Game} */
         this.game = game;
 
-        this.timer = null;
+        this.enabled = true;
+        this.intervals = [];
         this.rotateDelayTimer = null;
         this.rotating = false;
+        this.dropButtonIsPressed = false;
 
         this.init();
     }
 
     init() {
-        document.addEventListener("mouseup", () => this.clearInterval());
+        document.addEventListener("mouseup", () => this.clearIntervals());
         document.getElementById("btn-left").addEventListener("mousedown", () => this.input(MOVE_LEFT_INPUT));
         document.getElementById("btn-right").addEventListener("mousedown", () => this.input(MOVE_RIGHT_INPUT));
         document.getElementById("btn-up").addEventListener("mousedown", () => this.input(ROTATE_INPUT));
-        document.getElementById("btn-down").addEventListener("mousedown", () => this.input(DROP_INPUT));
+        document.getElementById("btn-down").addEventListener("mousedown", () => {
+            this.dropButtonIsPressed = true;
+            this.input(DROP_INPUT);
+        });
+        document.getElementById("btn-down").addEventListener("mouseup", () => {
+            this.dropButtonIsPressed = false;
+        });
 
         const btn = p5.createButton("Pause");
         btn.mousePressed(() => this.input(PAUSE_INPUT));
+    }
+
+    enable() {
+        this.enabled = true;
+    }
+
+    disable() {
+        this.enabled = false;
     }
 
     keyPressed() {
@@ -48,7 +64,7 @@ export class Input {
     }
 
     input(type) {
-        if (!this.game.turn) {
+        if (!this.game.turn || !this.enabled) {
             return;
         }
 
@@ -77,34 +93,27 @@ export class Input {
     startMove(left = false) {
         this.move(left);
 
-        this.clearInterval(this.timer);
-        this.timer = setInterval(() => {
-            this.move(left);
-        }, 150);
+        this.clearIntervals();
+        this.intervals.push(setInterval(() => this.move(left), 150));
     }
 
     async startDrop() {
         this.drop();
-        this.clearInterval();
+        this.clearIntervals();
+
         await sleep(100);
-        this.timer = setInterval(() => {
-            if (p5.keyIsPressed || p5.mouseIsPressed) {
-                this.drop();
-            }
-        }, 50);
+
+        this.intervals.push(setInterval(() => this.drop(), 50));
     }
 
     startRotate() {
         this.rotate();
-        this.clearInterval();
-        this.timer = setInterval(() => {
-            this.rotate();
-        }, 200);
+        this.clearIntervals();
+        this.intervals.push(setInterval(() => this.rotate(), 200));
     }
 
     rotate() {
         if (this.game.currentShape.canRotate()) {
-            // this.game.currentShape.rotate();
             client.rotate();
 
             clearTimeout(this.rotateDelayTimer);
@@ -115,21 +124,22 @@ export class Input {
 
     move(left) {
         if (this.game.currentShape.canMove(left)) {
-            // this.game.currentShape.move(left);
             client.move(left);
         }
     }
 
     drop() {
-        if (this.game.currentShape.canDrop()) {
-            // this.game.currentShape.drop();
+        if ((p5.keyIsPressed || this.dropButtonIsPressed) && this.game.currentShape.canDrop()) {
             client.drop();
         }
     }
 
-    clearInterval() {
-        clearInterval(this.timer);
-        this.timer = null;
+    clearIntervals() {
+        for (let i = 0; i < this.intervals.length; i++) {
+            clearInterval(this.intervals[i]);
+        }
+
+        this.intervals = [];
     }
 }
 

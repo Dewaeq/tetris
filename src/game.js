@@ -29,6 +29,9 @@ export default class Game {
     }
 
     start() {
+        if (this.turn) {
+            console.log("this client starts");
+        }
         this.started = true;
     }
 
@@ -54,7 +57,6 @@ export default class Game {
         if (!this.turn) return;
 
         client.updateScore(this.score + 100);
-
     }
 
     updateFallSpeed(maxScore) {
@@ -105,10 +107,7 @@ export default class Game {
             if (this.currentShape.canDrop()) {
                 if (!this.input.rotating && this.turn) {
                     client.drop();
-                    // this.currentShape.drop();
                 }
-            } else {
-                // this.checkGrid();
             }
         }
     }
@@ -122,22 +121,27 @@ export default class Game {
     checkGrid() {
         if (this.currentShape.canDrop()) return;
 
-        this.input.clearInterval();
+        this.input.clearIntervals();
 
-        // if (this.turn) {
-        // setTimeout(() => {
-            this.finishTurn();
-        // }, 200);
-        /* setTimeout(() => {
-            client.setNextShape(p5.floor(p5.random(7)));
-        }, 2000); */
-        // }
+        console.log("setting timeout");
+
+        if(this.turn) {
+            setTimeout(() => {
+                this.finishTurn();
+            }, 600);
+        }
     }
 
     finishTurn() {
-        // if (!this.turn) return;
+        console.log("finishing turn", this.turn);
+        if (this.turn) {
+            client.setNextShape(p5.floor(p5.random(7)));
+        }
+    }
 
-        console.log("adding blocks");
+    setNextShape(nextShapeId) {
+        this.input.clearIntervals();
+        this.input.disable();
 
         for (const block of this.currentShape.blocks) {
             let blockPos = this.currentShape.blockPos(block);
@@ -149,19 +153,21 @@ export default class Game {
 
         this.checkLines();
 
-        if (this.turn) {
-            console.log("ending turn");
-            client.setNextShape(p5.floor(p5.random(7)));
-        }
-    }
-
-    setNextShape(nextShapeId) {
         this.currentShape = this.nextShape;
         this.nextShape = new Shape(SHAPES.ALL[nextShapeId], this.grid);
 
         if (!this.currentShape.canDrop() && this.started) {
             this.stop();
         }
+
+        this.turn = !this.turn;
+        if (!this.turn) {
+            console.log("ending turn");
+        } else {
+            console.log("starting turn");
+        }
+
+        this.input.enable();
     }
 
     draw() {

@@ -41,7 +41,7 @@ new p5((p5) => {
   }
 
   p5.keyReleased = function () {
-    game?.input.clearInterval();
+    game?.input.clearIntervals();
   }
 });
 
