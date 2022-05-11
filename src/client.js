@@ -3,8 +3,8 @@ import { Shape, SHAPES } from "./shape.js";
 import { game } from "./sketch.js";
 
 
-// const socket = io("http://192.168.0.190:3030");
-const socket = io(" https://3265-2a02-1812-1435-f00-fc39-41cd-5364-3a2b.ngrok.io");
+const socket = io("http://192.168.0.190:3030");
+// const socket = io("https://9982-2a02-1812-1435-f00-751a-fbb-9f12-c2ff.ngrok.io");
 export let allUsers = {};
 
 const userName = prompt("Username:");
@@ -20,18 +20,25 @@ while (roomCode === null) {
 socket.emit("joinRoom", { code: roomCode, userName: userName });
 
 export const drop = () => {
+    game.currentShape.drop();
+    game.checkGrid();
+
     socket.emit("update", {
         type: "DROP",
     });
 };
 
 export const rotate = () => {
+    game.currentShape.rotate();
+
     socket.emit("update", {
         type: "ROTATE",
     });
 }
 
 export const move = (left) => {
+    game.currentShape.move(left);
+
     socket.emit("update", {
         type: "MOVE",
         left: left,
@@ -39,6 +46,9 @@ export const move = (left) => {
 }
 
 export const setNextShape = (id) => {
+    game.setNextShape(id);
+    game.turn = !game.turn;
+
     socket.emit("update", {
         type: "NEXT_SHAPE",
         shapeId: id,
@@ -46,6 +56,14 @@ export const setNextShape = (id) => {
 }
 
 export const updateScore = () => {
+    allUsers[socket.id].score += 100;
+    let maxScore = 0;
+    for (const key in allUsers) {
+        maxScore = Math.max(maxScore, allUsers[key].score);
+    }
+
+    game.updateFallSpeed(maxScore);
+
     socket.emit("update", {
         type: "SCORE",
         scorerId: socket.id,
@@ -73,18 +91,12 @@ socket.on("start", (data) => {
 });
 
 socket.on("update", (update) => {
+    console.log(update.type);
     switch (update.type) {
         case "NEXT_SHAPE":
-            game.currentShape = game.nextShape;
-            game.nextShape = new Shape(SHAPES.ALL[update.shapeId], game.grid);
+            game.setNextShape(update.shapeId);
             game.turn = !game.turn;
-
-            if (!game.currentShape.canDrop() && game.started) {
-                p5.frameRate(0);
-                alert("Game Over");
-
-                game.stop();
-            }
+            console.log("starting turn");
             break;
         case "DROP":
             game.currentShape.drop();
@@ -104,9 +116,7 @@ socket.on("update", (update) => {
                 maxScore = Math.max(maxScore, allUsers[key].score);
             }
 
-            // const maxScore = Math.max(allUsers.map(u => u.score));
             game.updateFallSpeed(maxScore);
-
             break;
         default:
             break;

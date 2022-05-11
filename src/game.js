@@ -1,7 +1,7 @@
 import * as client from "./client.js";
 import { Grid } from "./grid.js";
 import { Input } from "./input.js";
-import { SHAPES } from "./shape.js";
+import { Shape, SHAPES } from "./shape.js";
 import { gridY, gridX, cellSize, gridOffset } from "./sketch.js";
 
 export default class Game {
@@ -34,6 +34,12 @@ export default class Game {
 
     stop() {
         this.started = false;
+
+        console.log("current grid:");
+        this.grid.print();
+
+        p5.frameRate(0);
+        alert("Game Over");
     }
 
     pause() {
@@ -102,39 +108,68 @@ export default class Game {
                     // this.currentShape.drop();
                 }
             } else {
-                this.checkGrid();
+                // this.checkGrid();
             }
         }
     }
 
+    /**
+     * This function gets called right after the current shape dropped.
+     * It checks for cleared lines, updates the blocks matrix and calls
+     * setNextShape on client
+     * @returns {void}
+     */
     checkGrid() {
         if (this.currentShape.canDrop()) return;
+
+        this.input.clearInterval();
+
+        // if (this.turn) {
+        // setTimeout(() => {
+            this.finishTurn();
+        // }, 200);
+        /* setTimeout(() => {
+            client.setNextShape(p5.floor(p5.random(7)));
+        }, 2000); */
+        // }
+    }
+
+    finishTurn() {
+        // if (!this.turn) return;
+
+        console.log("adding blocks");
 
         for (const block of this.currentShape.blocks) {
             let blockPos = this.currentShape.blockPos(block);
             this.blocks[blockPos.y][blockPos.x] = {
-                pos: blockPos, color: this.currentShape.color
+                pos: blockPos,
+                color: this.currentShape.color,
             };
         }
 
         this.checkLines();
-        this.input.clearInterval();
-        // this.currentShape = this.nextShape;
-        // this.nextShape = SHAPES.Random(this.grid);
 
         if (this.turn) {
-            setTimeout(() => {
-                client.setNextShape(p5.floor(p5.random(7)));
-            }, 200);
+            console.log("ending turn");
+            client.setNextShape(p5.floor(p5.random(7)));
+        }
+    }
+
+    setNextShape(nextShapeId) {
+        this.currentShape = this.nextShape;
+        this.nextShape = new Shape(SHAPES.ALL[nextShapeId], this.grid);
+
+        if (!this.currentShape.canDrop() && this.started) {
+            this.stop();
         }
     }
 
     draw() {
         if (!this.started) return;
 
-        // if (this.turn) {
-        this.update();
-        // }
+        if (this.turn) {
+            this.update();
+        }
 
         p5.background(220);
         p5.strokeWeight(.1);

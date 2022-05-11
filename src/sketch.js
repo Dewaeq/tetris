@@ -37,11 +37,11 @@ new p5((p5) => {
   }
 
   p5.keyPressed = function () {
-    game.input.keyPressed();
+    game?.input.keyPressed();
   }
 
   p5.keyReleased = function () {
-    game.input.clearInterval();
+    game?.input.clearInterval();
   }
 });
 
