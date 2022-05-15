@@ -7,9 +7,16 @@ import { gridY, gridX, cellSize, gridOffset } from "./sketch.js";
 export default class Game {
     constructor() {
         this.grid = new Grid();
+        this.blocks = Array(gridY).fill(null).map(_ => Array(gridX).fill(null));
         this.input = new Input(this);
         this.currentShape = SHAPES.Random(this.grid);
         this.nextShape = SHAPES.Random(this.grid);
+
+        this.score = 0;
+        this.fallSpeed = 40;
+        this.turn = false;
+        this.started = false;
+
         this.init();
     }
 
@@ -37,11 +44,13 @@ export default class Game {
 
     stop() {
         this.started = false;
+        this.turn = false;
+        this.input.clearIntervals();
+        this.input.disable();
 
         console.log("current grid:");
         this.grid.print();
 
-        p5.frameRate(0);
         alert("Game Over");
     }
 
@@ -121,11 +130,9 @@ export default class Game {
     checkGrid() {
         if (this.currentShape.canDrop()) return;
 
-        this.input.clearIntervals();
-
-        console.log("setting timeout");
-
-        if(this.turn) {
+        // Small timeout to give the player the chance to maneuver the block
+        // when it's touching the ground
+        if (this.turn) {
             setTimeout(() => {
                 this.finishTurn();
             }, 600);
@@ -133,7 +140,6 @@ export default class Game {
     }
 
     finishTurn() {
-        console.log("finishing turn", this.turn);
         if (this.turn) {
             client.setNextShape(p5.floor(p5.random(7)));
         }
@@ -161,12 +167,6 @@ export default class Game {
         }
 
         this.turn = !this.turn;
-        if (!this.turn) {
-            console.log("ending turn");
-        } else {
-            console.log("starting turn");
-        }
-
         this.input.enable();
     }
 
@@ -204,6 +204,7 @@ export default class Game {
 
         p5.fill("black");
         p5.textSize(20);
+        p5.text("SCORE:", 0, cellSize);
 
         let i = 0;
         for (const key in client.allUsers) {
@@ -216,22 +217,15 @@ export default class Game {
 
     drawNextShape() {
         p5.push();
-
         let offset = this.nextShape.width() * 2;
-
         p5.translate(cellSize * gridX + gridOffset * 1.5, 0);
-
         p5.textAlign(p5.CENTER);
         p5.textSize(20);
         p5.text("NEXT", 0, cellSize);
-
         p5.pop();
 
         p5.push();
-
-        p5.translate(cellSize * gridX + gridOffset * ((offset + 1) / offset), cellSize * 0.5);
-
-        p5.translate(0, cellSize);
+        p5.translate(cellSize * gridX + gridOffset * ((offset + 1) / offset), cellSize * 1.5);
         p5.fill(this.nextShape.color);
 
         for (const block of this.nextShape.blocks) {
