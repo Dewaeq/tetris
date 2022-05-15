@@ -204,7 +204,6 @@ export default class Game {
 
         p5.fill("black");
         p5.textSize(20);
-        p5.text(`FPS: ${p5.floor(p5.frameRate())}`, 0, cellSize);
 
         let i = 0;
         for (const key in client.allUsers) {
