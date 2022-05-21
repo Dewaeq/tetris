@@ -15,6 +15,7 @@ export default class Game {
         this.score = 0;
         this.fallSpeed = 40;
         this.turn = false;
+        this.checkingGrid = false;
         this.started = false;
 
         this.init();
@@ -29,6 +30,7 @@ export default class Game {
         this.score = 0;
         this.fallSpeed = 40;
         this.turn = false;
+        this.checkingGrid = false;
         this.started = false;
 
         this.grid.clear();
@@ -36,21 +38,18 @@ export default class Game {
     }
 
     start() {
-        if (this.turn) {
-            console.log("this client starts");
-        }
         this.started = true;
     }
 
     stop() {
-        this.started = false;
-        this.turn = false;
-        this.input.clearIntervals();
-        this.input.disable();
-
         console.log("current grid:");
         this.grid.print();
 
+        this.turn = false;
+        this.input.clearIntervals();
+        this.input.disable();
+        this.draw();
+        
         alert("Game Over");
     }
 
@@ -122,7 +121,7 @@ export default class Game {
     }
 
     /**
-     * This function gets called right after the current shape dropped.
+     * This function gets called right after the current shape dropped or rotated.
      * It checks for cleared lines, updates the blocks matrix and calls
      * setNextShape on client
      * @returns {void}
@@ -130,9 +129,10 @@ export default class Game {
     checkGrid() {
         if (this.currentShape.canDrop()) return;
 
-        // Small timeout to give the player the chance to maneuver the block
+        // Short timeout to give the player the chance to maneuver the block
         // when it's touching the ground
-        if (this.turn) {
+        if (this.turn && !this.checkingGrid) {
+            this.checkingGrid = true;
             setTimeout(() => {
                 this.finishTurn();
             }, 600);
@@ -141,7 +141,11 @@ export default class Game {
 
     finishTurn() {
         if (this.turn) {
-            client.setNextShape(p5.floor(p5.random(7)));
+            if (this.currentShape.canDrop()) {
+                this.checkingGrid = false;
+            } else {
+                client.setNextShape(p5.floor(p5.random(7)));
+            }
         }
     }
 
@@ -166,12 +170,34 @@ export default class Game {
             this.stop();
         }
 
-        this.turn = !this.turn;
+        // this.turn = !this.turn;
+        client.setNextTurn();
+        this.checkingGrid = false;
         this.input.enable();
     }
 
     draw() {
-        if (!this.started) return;
+        if (!this.started) {
+            p5.push();
+
+            p5.fill("black");
+
+            p5.textStyle(p5.BOLD);
+            p5.textSize(28);
+            p5.text("Players:", cellSize * 2, cellSize * 2);
+
+            p5.textStyle(p5.NORMAL);
+            p5.textSize(24);
+
+            for (let i = 0; i < client.allUsers.length; i++) {
+                const user = client.allUsers[i];
+                p5.text(`${user.userName} ${user.score || ""}`, cellSize * 2, cellSize * (i + 3));
+            }
+
+
+            p5.pop();
+            return;
+        }
 
         if (this.turn) {
             this.update();
@@ -207,11 +233,22 @@ export default class Game {
         p5.text("SCORE:", 0, cellSize);
 
         let i = 0;
-        for (const key in client.allUsers) {
-            const user = client.allUsers[key];
+        for (const user of client.allUsers) {
             p5.text(`${user.userName}:`, 0, cellSize * (2 + i * 2));
             p5.text(`${user.score}`, 0, cellSize * (3 + i * 2));
             i++;
+        }
+
+        if (!this.turn) {
+            p5.push();
+
+            p5.textStyle(p5.BOLD);
+            p5.textSize(35);
+
+            const width = p5.textWidth("SPECTATING");
+            p5.text("SPECTATING", cellSize * 5 + gridOffset - width / 2, cellSize * 9);
+
+            p5.pop();
         }
     }
 

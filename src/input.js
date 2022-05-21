@@ -20,6 +20,7 @@ export class Input {
         this.rotateDelayTimer = null;
         this.rotating = false;
         this.dropButtonIsPressed = false;
+        this.startBtn = null;
 
         this.init();
     }
@@ -37,8 +38,17 @@ export class Input {
             this.dropButtonIsPressed = false;
         });
 
-        const btn = p5.createButton("Pause");
-        btn.mousePressed(() => this.input(PAUSE_INPUT));
+        const pauseBtn = p5.createButton("Pause");
+        pauseBtn.mousePressed(() => this.input(PAUSE_INPUT));
+    }
+
+    addStartButton() {
+        this.startBtn = p5.createButton("Start");
+        this.startBtn.mousePressed(() => client.startGame());
+    }
+
+    removeStartButton() {
+        this.startBtn.remove();
     }
 
     enable() {
