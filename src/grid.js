@@ -1,6 +1,12 @@
-class Grid {
+import { gridY, gridX } from "./sketch.js";
+
+export class Grid {
     constructor() {
         this.matrix = Array(gridY).fill(null).map(_ => Array(gridX).fill(false));
+    }
+
+    clear() {
+        this.matrix = Array(gridY).fill(null).map(_ => Array(gridX).fill(false)); 
     }
 
     isLine(y) {
