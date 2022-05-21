@@ -3,8 +3,7 @@ import { Shape, SHAPES } from "./shape.js";
 import { game } from "./sketch.js";
 
 
-// const socket = io("https://tetris-server-dewaeq.herokuapp.com/");
-const socket = io("localhost:3000");
+const socket = io("https://tetris-server-dewaeq.herokuapp.com/");
 /**@type {Object[]} */
 export let allUsers = [];
 let currentPlayerIndex = null;
