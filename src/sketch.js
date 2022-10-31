@@ -1,5 +1,6 @@
 import Game from "./game.js";
 import { SHAPES } from "./shape.js";
+import p5 from "p5";
 
 export const gridX = 10;
 export const gridY = 20;

@@ -1,20 +1,18 @@
 {
   "name": "tetris",
+  "private": true,
   "version": "1.0.0",
-  "description": "",
-  "main": "game.js",
+  "type": "module",
   "scripts": {
-    "start": "snowpack dev",
-    "build": "snowpack build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "snowpack": "^3.8.8"
+    "vite": "^3.2.0"
   },
   "dependencies": {
-    "socket.io-client": "^4.5.0"
+    "p5": "^1.5.0",
+    "socket.io-client": "^4.5.3"
   }
 }

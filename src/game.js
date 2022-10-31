@@ -49,7 +49,7 @@ export default class Game {
         this.input.clearIntervals();
         this.input.disable();
         this.draw();
-        
+
         alert("Game Over");
     }
 
@@ -140,12 +140,12 @@ export default class Game {
     }
 
     finishTurn() {
-        if (this.turn) {
-            if (this.currentShape.canDrop()) {
-                this.checkingGrid = false;
-            } else {
-                client.setNextShape(p5.floor(p5.random(7)));
-            }
+        if (!this.turn) return;
+
+        if (this.currentShape.canDrop()) {
+            this.checkingGrid = false;
+        } else {
+            client.setNextShape(p5.floor(p5.random(7)));
         }
     }
 
