@@ -16,8 +16,9 @@ const init = () => {
     $ = new p5((_) => { })
 
     $.setup = () => {
-        const singleBtn = $.createButton("Single player")
-        const multiBtn = $.createButton("Multiplayer")
+        $.select("#buttons")?.hide()
+        const singleBtn = $.createButton("Single player").parent("#gamemode")
+        const multiBtn = $.createButton("Multiplayer").parent("#gamemode")
 
         singleBtn.mousePressed(() => loadGame(false))
         multiBtn.mousePressed(() => loadGame(true))
@@ -26,6 +27,8 @@ const init = () => {
 
 const loadGame = (isMultiPlayer: boolean) => {
     $.removeElements()
+    $.select("#buttons")?.show()
+    $.select("a")?.hide()
 
     if ($.windowWidth > $.windowHeight) {
         cellSize = $.windowHeight * 0.75 / gridY
