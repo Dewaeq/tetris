@@ -48,14 +48,13 @@ const loadGame = (isMultiPlayer: boolean) => {
     $.draw = () => game.draw()
 
     $.keyPressed = (event: any) => {
-        event.preventDefault()
+        if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(event.code) > -1) {
+            event.preventDefault();
+        }
         game.input.keyPressed()
     }
-    
-    $.keyReleased = (event: any) => {
-        event.preventDefault()
-        game.input.clearIntervals()
-    }
+
+    $.keyReleased = () => game.input.clearIntervals()
 }
 
 init()
