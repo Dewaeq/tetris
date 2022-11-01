@@ -41,7 +41,7 @@ export class Input {
 
     addStartButton() {
         this.startBtn = $.createButton("Start")
-        this.startBtn.mousePressed(() => this.game.client.startGame())
+        this.startBtn.mousePressed(() => this.game.player.startGame())
     }
 
     removeStartButton() {
@@ -71,7 +71,7 @@ export class Input {
     }
 
     input(type: InputType): void {
-        if (!this.enabled) return
+        if (!this.enabled || !this.game.turn) return
 
         switch (type) {
             case InputType.Drop:
@@ -104,7 +104,8 @@ export class Input {
 
     drop() {
         if (($.keyIsPressed || this.dropBtnIsPressed) && this.game.currentShape.canDrop()) {
-            this.game.client.drop()
+            this.game.player.drop()
+            this.game.updateScore(1)
         }
     }
 
@@ -116,7 +117,7 @@ export class Input {
 
     move(left: boolean) {
         if (this.game.currentShape.canMove(left)) {
-            this.game.client.move(left)
+            this.game.player.move(left)
         }
     }
 
@@ -128,7 +129,7 @@ export class Input {
 
     rotate() {
         if (this.game.currentShape.canRotate()) {
-            this.game.client.rotate()
+            this.game.player.rotate()
 
             clearTimeout(this.rotateDelayTimer)
 

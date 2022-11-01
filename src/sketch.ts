@@ -12,31 +12,41 @@ const init = () => {
     if (window.initialized) return
 
     window.initialized = true
-    
+
     $ = new p5((_) => { })
 
     $.setup = () => {
-        if ($.windowWidth > $.windowHeight) {
-            cellSize = $.windowHeight * 0.75 / gridY
-            gridOffset = cellSize * 3
+        const singleBtn = $.createButton("Single player")
+        const multiBtn = $.createButton("Multiplayer")
 
-            const canv = $.createCanvas(gridX * cellSize + gridOffset * 2, gridY * cellSize)
-            canv.parent("#canvas")
-        } else {
-            cellSize = $.windowWidth * 0.6 / gridX
-            gridOffset = $.windowWidth * 0.4 / 2
-            const canv = $.createCanvas($.windowWidth, gridY * cellSize)
-            canv.parent("#canvas")
-        }
-
-        game = new Game()
-        
-        $.draw = () => game.draw()
-    
-        $.keyPressed = () => game.input.keyPressed()
-    
-        $.keyReleased = () => game.input.clearIntervals()
+        singleBtn.mousePressed(() => loadGame(false))
+        multiBtn.mousePressed(() => loadGame(true))
     }
+}
+
+const loadGame = (isMultiPlayer: boolean) => {
+    $.removeElements()
+
+    if ($.windowWidth > $.windowHeight) {
+        cellSize = $.windowHeight * 0.75 / gridY
+        gridOffset = cellSize * 3
+
+        const canv = $.createCanvas(gridX * cellSize + gridOffset * 2, gridY * cellSize)
+        canv.parent("#canvas")
+    } else {
+        cellSize = $.windowWidth * 0.6 / gridX
+        gridOffset = $.windowWidth * 0.4 / 2
+        const canv = $.createCanvas($.windowWidth, gridY * cellSize)
+        canv.parent("#canvas")
+    }
+
+    game = new Game(isMultiPlayer)
+
+    $.draw = () => game.draw()
+
+    $.keyPressed = () => game.input.keyPressed()
+
+    $.keyReleased = () => game.input.clearIntervals()
 }
 
 init()

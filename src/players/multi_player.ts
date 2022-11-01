@@ -1,21 +1,15 @@
-import { io, Socket } from "socket.io-client"
-import { Game } from "./game"
-import { Shapes } from "./shape"
+import { io, Socket } from "socket.io-client";
+import { Shapes } from "../shape";
+import { Player } from "./player";
 
-export class Client {
-    users: User[] = []
-    private game: Game
+export class MultiPlayer extends Player {
     private socket: Socket = io("https://tetris-server-dewaeq.herokuapp.com/")
     private userName: string = ""
     private roomCode: number = 0
     private isHost: boolean = false
     private currentPlayer: number = -1
 
-    constructor(game: Game) {
-        this.game = game
-    }
-
-    init() {
+    init(): void {
         while (this.userName === "") {
             const promptInput = prompt('Username:')
             if (promptInput) {
@@ -32,7 +26,7 @@ export class Client {
         this.socket.emit("joinRoom", { code: this.roomCode, userName: this.userName })
 
         this.socket.on("joined", (data) => this.onJoin(data))
-        this.socket.on("onUserJoined", (data) => this.onUserJoined(data))
+        this.socket.on("userJoined", (data) => this.onUserJoined(data))
         this.socket.on("start", (data) => this.onStart(data))
         this.socket.on("update", (data) => this.onUpdate(data))
         this.socket.on("leave", (_) => this.onLeave())
@@ -87,8 +81,12 @@ export class Client {
                 this.game.currentShape.move(update.left)
                 break
             case "SCORE":
-                this.increaseUserScore(update.scorerId)
-                this.game.updateFallSpeed(this.maxScore())
+                this.increaseUserScore(update.scorerId, update.value)
+                // this.game.updateFallSpeed(this.maxScore())
+                break
+            case "LINES":
+                this.game.linesCleared += update.value
+                this.game.setLevel()
                 break
             default:
                 break
@@ -100,41 +98,23 @@ export class Client {
         window.location.reload()
     }
 
-    startGame() {
+    private update(type: string, data?: Object) {
+        this.socket.emit("update", { type: type, ...data })
+    }
+
+    startGame(): void {
         if (!this.isHost) return
 
         this.game.input.removeStartButton()
         this.socket.emit("start")
     }
 
-    private update(type: string, data?: Object) {
-        this.socket.emit("update", { type: type, ...data })
-    }
-
-    drop() {
-        this.update("DROP")
-        this.game.currentShape.drop()
-        this.game.checkGrid()
-    }
-
-    rotate() {
-        this.update("ROTATE")
-        this.game.currentShape.rotate()
-        this.game.checkGrid()
-    }
-
-    move(left: boolean) {
-        this.update("MOVE", { left: left })
-        this.game.currentShape.move(left)
-        this.game.checkGrid()
-    }
-
-    setNextShape(id: number) {
+    setNextShape(id: number): void {
         this.update("NEXT_SHAPE", { shapeId: id })
         this.game.setNextShape(id)
     }
 
-    setNextTurn() {
+    endTurn(): void {
         this.game.turn = false
         this.currentPlayer++
 
@@ -147,31 +127,37 @@ export class Client {
         }
     }
 
-    updateScore() {
-        this.update("SCORE", { scorerId: this.socket.id })
+    updateScore(value: number): void {
+        this.update("SCORE", { scorerId: this.socket.id, value: value })
 
-        this.increaseUserScore(this.socket.id)
-        this.game.updateFallSpeed(this.maxScore())
+        this.increaseUserScore(this.socket.id, value)
     }
 
-    private increaseUserScore(id: string) {
-        this.users.find(u => u.id === id)!.score += 100
+    updateNumLines(value: number): void {
+        this.update("LINES", { value: value })
+        this.game.linesCleared += value
+        this.game.setLevel()
     }
 
-    private maxScore(): number {
-        let maxScore = 0
-        for (const user of this.users) {
-            maxScore = Math.max(maxScore, user.score)
-        }
-
-        return maxScore
+    private increaseUserScore(id: string, value: number) {
+        this.users.find(u => u.id === id)!.score += value
     }
-}
 
-class User {
-    constructor(
-        public userName: string,
-        public score: number,
-        public id: string,
-    ) { }
+    drop(): void {
+        this.update("DROP")
+        this.game.currentShape.drop()
+        this.game.checkGrid()
+    }
+
+    move(left: boolean): void {
+        this.update("MOVE", { left: left })
+        this.game.currentShape.move(left)
+        this.game.checkGrid()
+    }
+
+    rotate(): void {
+        this.update("ROTATE")
+        this.game.currentShape.rotate()
+        this.game.checkGrid()
+    }
 }

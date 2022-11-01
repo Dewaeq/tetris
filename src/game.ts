@@ -3,42 +3,56 @@ import { Grid } from "./grid"
 import { Input } from "./input"
 import { Shape, Shapes } from "./shape"
 import { $, cellSize, gridOffset, gridX, gridY } from "./sketch"
-import { Client } from "./client"
+import { Player } from "./players/player"
+import { SinglePlayer } from "./players/single_player"
+import { MultiPlayer } from "./players/multi_player"
 
 export class Game {
     grid: Grid
     input: Input
-    client: Client
+    player: Player
     blocks: (Block | null)[][]
     currentShape: Shape
     nextShape: Shape
 
+    isMultiPlayer: boolean = false
     turn: boolean = false
     started: boolean = false
-    score: number = 0
     fallSpeed: number = 40
     checkingGrid: boolean = false
+    gameOver: boolean = false
+    linesCleared: number = 0
+    level: number = 1
+    comboCount = 0
 
-    constructor() {
+    popupTexts: string[] = []
+
+
+    constructor(isMultiPlayer: boolean) {
         this.grid = new Grid()
         this.input = new Input(this)
-        this.client = new Client(this)
+        this.player = isMultiPlayer ? new MultiPlayer(this) : new SinglePlayer(this)
+        this.isMultiPlayer = isMultiPlayer
         this.blocks = new Array(gridY).fill(null).map(_ => new Array(gridX).fill(null))
 
         this.currentShape = Shapes.Random(this.grid)
         this.nextShape = Shapes.Random(this.grid)
 
-        this.client.init()
+        this.player.init()
     }
 
     init() {
         this.grid.clear()
         this.blocks = new Array(gridY).fill(null).map(_ => new Array(gridX).fill(null))
-        this.score = 0
         this.fallSpeed = 40
         this.turn = false
         this.checkingGrid = false
         this.started = false
+        this.gameOver = false
+        this.level = 1
+        this.linesCleared = 0
+        this.comboCount = 0
+        this.popupTexts = []
 
         this.grid.clear()
     }
@@ -52,6 +66,7 @@ export class Game {
         this.grid.print()
 
         this.turn = false
+        this.gameOver = true
         this.input.clearIntervals()
         this.input.disable()
         this.draw()
@@ -67,36 +82,27 @@ export class Game {
         }
     }
 
-    updateScore() {
+    updateScore(value: number) {
         if (!this.turn) return
 
-        this.client.updateScore()
+        this.player.updateScore(value)
     }
 
-    updateFallSpeed(maxScore: number) {
-        if (maxScore > 4000) {
-            this.fallSpeed = 6
-        } else if (maxScore > 3000) {
-            this.fallSpeed = 10
-        } else if (maxScore > 2500) {
-            this.fallSpeed = 12
-        } else if (maxScore > 2000) {
-            this.fallSpeed = 15
-        } else if (maxScore > 1500) {
-            this.fallSpeed = 18
-        } else if (maxScore > 1000) {
-            this.fallSpeed = 20
-        } else if (maxScore > 600) {
-            this.fallSpeed = 25
-        } else if (maxScore > 300) {
-            this.fallSpeed = 30
-        }
+    updateNumLines(value: number) {
+        if (!this.turn) return
+
+        this.player.updateNumLines(value)
+    }
+
+    setLevel() {
+        this.level = 1 + Math.floor(this.linesCleared / 10)
     }
 
     checkLines() {
+        let numLines = 0
         for (let y = 0; y < this.grid.matrix.length; y++) {
             if (this.grid.isLine(y)) {
-                this.updateScore()
+                numLines++
 
                 // Move each row above this one down
                 for (let i = y - 1; i >= 0; i--) {
@@ -114,18 +120,63 @@ export class Game {
                 }
             }
         }
+
+        if (numLines === 0) {
+            this.comboCount = 0
+            return
+        }
+
+        let scoreIncrease = (numLines === 4 ?
+            800 : numLines === 3 ?
+                500 : numLines === 2 ?
+                    300 : 100) * this.level
+
+        this.popupTexts = []
+        const scoreText = (numLines === 4 ?
+            "Tetris" : numLines === 3 ?
+                "Triple" : numLines === 2 ?
+                    "Double" : "Single")
+        this.popupTexts.push(`${scoreText} + ${scoreIncrease}`)
+
+        if (this.comboCount > 0 && !this.isMultiPlayer) {
+            const comboIncrease = 50 * this.comboCount * this.level
+            this.popupTexts.push(`${this.comboCount} x Combo + ${comboIncrease}`)
+            scoreIncrease += comboIncrease
+        }
+
+        this.updateScore(scoreIncrease)
+        
+        this.comboCount++
+        this.updateNumLines(numLines)
+
+        setTimeout(() => {
+            this.popupTexts = []
+        }, 1500);
     }
 
     update() {
         if ($.frameCount % this.fallSpeed === 0 && this.currentShape.canDrop()) {
             if (!this.input.rotating && this.turn) {
-                this.client.drop()
+                this.player.drop()
             }
         }
     }
 
     draw() {
-        if (!this.started) {
+        if (this.gameOver) {
+            $.push()
+
+            $.textStyle($.BOLD)
+            $.textSize(35)
+
+            const width = $.textWidth("GAME OVER")
+            $.text("GAME OVER", cellSize * 5 + gridOffset - width / 2, cellSize * 9)
+
+            $.pop()
+            return
+        }
+
+        if (!this.started && this.isMultiPlayer) {
             $.background(255)
 
             $.push()
@@ -137,8 +188,8 @@ export class Game {
             $.textStyle($.NORMAL)
             $.textSize(24)
 
-            for (let i = 0; i < this.client.users.length; i++) {
-                const user = this.client.users[i]
+            for (let i = 0; i < this.player.users.length; i++) {
+                const user = this.player.users[i]
                 $.text(`${user.userName} ${user.score || ""}`, cellSize * 2, cellSize * (i + 3))
             }
 
@@ -177,13 +228,24 @@ export class Game {
 
         $.fill("black")
         $.textSize(20)
-        $.text("SCORE:", 0, cellSize)
 
-        let i = 0
-        for (const user of this.client.users) {
-            $.text(`${user.userName}:`, 0, cellSize * (2 + i * 2))
-            $.text(`${user.score}`, 0, cellSize * (3 + i * 2))
-            i++
+        $.text("LEVEL:", 0, cellSize)
+        $.text(this.level, 0, cellSize * 2)
+
+        $.text("LINES:", 0, cellSize * 3)
+        $.text(this.linesCleared, 0, cellSize * 4)
+
+        $.text("SCORE:", 0, cellSize * 5)
+
+        if (this.isMultiPlayer) {
+            let i = 0
+            for (const user of this.player.users) {
+                $.text(`${user.userName}:`, 0, cellSize * (6 + i * 2))
+                $.text(`${user.score}`, 0, cellSize * (7 + i * 2))
+                i++
+            }
+        } else {
+            $.text(`${this.player.users[0].score}`, 0, cellSize * 6)
         }
 
         if (!this.turn) {
@@ -197,6 +259,19 @@ export class Game {
 
             $.pop()
         }
+
+        $.push()
+
+        $.textStyle($.BOLD)
+        $.textSize(25)
+
+        for (let i = 0; i < this.popupTexts.length; i++) {
+            const text = this.popupTexts[i]
+            const width = $.textWidth(text)
+            $.text(text, cellSize * 5 + gridOffset - width / 2, cellSize * (i + 10))
+        }
+
+        $.pop()
     }
 
     drawShape(shape: Shape) {
@@ -259,7 +334,7 @@ export class Game {
         if (this.currentShape.canDrop()) {
             this.checkingGrid = false
         } else {
-            this.client.setNextShape($.floor($.random(7)))
+            this.player.setNextShape($.floor($.random(7)))
         }
     }
 
@@ -279,11 +354,11 @@ export class Game {
 
         if (!this.currentShape.canDrop() && this.started) {
             this.stop()
+        } else {
+            this.player.endTurn()
+            this.checkingGrid = false
+            this.input.enable()
         }
-
-        this.client.setNextTurn()
-        this.checkingGrid = false
-        this.input.enable()
     }
 }
 
