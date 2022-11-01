@@ -47,9 +47,15 @@ const loadGame = (isMultiPlayer: boolean) => {
 
     $.draw = () => game.draw()
 
-    $.keyPressed = () => game.input.keyPressed()
-
-    $.keyReleased = () => game.input.clearIntervals()
+    $.keyPressed = (event: any) => {
+        event.preventDefault()
+        game.input.keyPressed()
+    }
+    
+    $.keyReleased = (event: any) => {
+        event.preventDefault()
+        game.input.clearIntervals()
+    }
 }
 
 init()
