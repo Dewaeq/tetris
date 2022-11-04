@@ -1,6 +1,6 @@
-import { io, Socket } from "socket.io-client";
-import { Shapes } from "../shape";
-import { Player } from "./player";
+import { io, Socket } from "socket.io-client"
+import { Shapes } from "../shape"
+import { Player } from "./player"
 
 export class MultiPlayer extends Player {
     private socket: Socket = io("https://tetris-server-dewaeq.herokuapp.com/")
@@ -102,19 +102,19 @@ export class MultiPlayer extends Player {
         this.socket.emit("update", { type: type, ...data })
     }
 
-    startGame(): void {
+    override startGame(): void {
         if (!this.isHost) return
 
         this.game.input.removeStartButton()
         this.socket.emit("start")
     }
 
-    setNextShape(id: number): void {
+    override setNextShape(id: number): void {
         this.update("NEXT_SHAPE", { shapeId: id })
-        this.game.setNextShape(id)
+        super.setNextShape(id)
     }
 
-    endTurn(): void {
+    override endTurn(): void {
         this.game.turn = false
         this.currentPlayer++
 
@@ -127,37 +127,33 @@ export class MultiPlayer extends Player {
         }
     }
 
-    updateScore(value: number): void {
+    override updateScore(value: number): void {
         this.update("SCORE", { scorerId: this.socket.id, value: value })
 
         this.increaseUserScore(this.socket.id, value)
     }
 
-    updateNumLines(value: number): void {
+    override updateNumLines(value: number): void {
         this.update("LINES", { value: value })
-        this.game.linesCleared += value
-        this.game.setLevel()
+        super.updateNumLines(value)
     }
 
     private increaseUserScore(id: string, value: number) {
         this.users.find(u => u.id === id)!.score += value
     }
 
-    drop(): void {
+    override drop(): void {
         this.update("DROP")
-        this.game.currentShape.drop()
-        this.game.checkGrid()
+        super.drop()
     }
 
-    move(left: boolean): void {
+    override move(left: boolean): void {
         this.update("MOVE", { left: left })
-        this.game.currentShape.move(left)
-        this.game.checkGrid()
+        super.move(left)
     }
 
-    rotate(): void {
+    override rotate(): void {
         this.update("ROTATE")
-        this.game.currentShape.rotate()
-        this.game.checkGrid()
+        super.rotate()
     }
 }

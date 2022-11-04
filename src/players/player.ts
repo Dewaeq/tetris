@@ -10,21 +10,35 @@ export abstract class Player {
 
     abstract init(): void
 
-    abstract startGame(): void
-
-    abstract setNextShape(id: number): void
-
-    abstract endTurn(): void
-
     abstract updateScore(value: number): void
 
-    abstract updateNumLines(value: number): void
+    startGame(): void {}
 
-    abstract drop(): void
+    endTurn(): void {}
 
-    abstract move(left: boolean): void
+    setNextShape(id: number): void {
+        this.game.setNextShape(id)
+    }
 
-    abstract rotate(): void
+    updateNumLines(value: number): void {
+        this.game.linesCleared += value
+        this.game.setLevel()
+    }
+
+    drop(): void {
+        this.game.currentShape.drop()
+        this.game.checkGrid()
+    }
+
+    move(left: boolean): void {
+        this.game.currentShape.move(left)
+        this.game.checkGrid()
+    }
+
+    rotate(): void {
+        this.game.currentShape.rotate()
+        this.game.checkGrid()
+    }
 }
 
 export class User {

@@ -49,7 +49,7 @@ const loadGame = (isMultiPlayer: boolean) => {
 
     $.keyPressed = (event: any) => {
         if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(event.code) > -1) {
-            event.preventDefault();
+            event.preventDefault()
         }
         game.input.keyPressed()
     }
