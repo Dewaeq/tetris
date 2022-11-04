@@ -231,7 +231,7 @@ export class Game {
         $.translate(cellSize * gridX + gridOffset * 1.5, 0)
         $.textAlign($.CENTER)
         $.textSize(20)
-        $.fill("black")
+        $.fill(0)
         $.text("NEXT", 0, cellSize)
         $.pop()
 
@@ -250,7 +250,7 @@ export class Game {
     drawScores() {
         $.push()
 
-        $.fill("black")
+        $.fill(0)
         $.textSize(20)
 
         $.text("LEVEL:", 0, cellSize)
@@ -280,7 +280,7 @@ export class Game {
 
         $.textStyle($.BOLD)
         $.textSize(25)
-        $.fill("black")
+        $.fill(0)
 
         for (let i = 0; i < this.popupTexts.length; i++) {
             const text = this.popupTexts[i]
@@ -301,6 +301,7 @@ export class Game {
 
         $.textStyle($.BOLD)
         $.textSize(35)
+        $.fill(0)
 
         const width = $.textWidth("GAME OVER")
         $.text("GAME OVER", cellSize * 5 + gridOffset - width / 2, cellSize * 9)
@@ -312,7 +313,7 @@ export class Game {
         $.background(255)
 
         $.push()
-        $.fill("black")
+        $.fill(0)
         $.textStyle($.BOLD)
         $.textSize(28)
         $.text("Players:", cellSize * 2, cellSize * 2)
