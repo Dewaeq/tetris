@@ -3,7 +3,7 @@ import { Shapes } from "../shape"
 import { Player } from "./player"
 
 export class MultiPlayer extends Player {
-    private socket: Socket = io("https://tetris-server-dewaeq.herokuapp.com/")
+    private socket: Socket = io("https://tetris-server.onrender.com/")
     private userName: string = ""
     private roomCode: number = 0
     private isHost: boolean = false
@@ -30,6 +30,7 @@ export class MultiPlayer extends Player {
         this.socket.on("start", (data) => this.onStart(data))
         this.socket.on("update", (data) => this.onUpdate(data))
         this.socket.on("leave", (_) => this.onLeave())
+        this.socket.on("disconnect", (reason) => this.onDisConnect(reason));
     }
 
     private onJoin(data: any) {
@@ -98,6 +99,11 @@ export class MultiPlayer extends Player {
 
     private onLeave() {
         alert("Other player left :(")
+        window.location.reload()
+    }
+
+    private onDisConnect(reason: Socket.DisconnectReason) {
+        alert("Error: Lost connection\nDetails: " + reason)
         window.location.reload()
     }
 
