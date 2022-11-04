@@ -18,7 +18,7 @@ export class Game {
     isMultiPlayer: boolean = false
     turn: boolean = false
     started: boolean = false
-    fallSpeed: number = 40
+    fallSpeed: number = FALL_SPEEDS[0]
     checkingGrid: boolean = false
     gameOver: boolean = false
     linesCleared: number = 0
@@ -44,7 +44,7 @@ export class Game {
     init() {
         this.grid.clear()
         this.blocks = new Array(gridY).fill(null).map(_ => new Array(gridX).fill(null))
-        this.fallSpeed = 40
+        this.fallSpeed = FALL_SPEEDS[0]
         this.turn = false
         this.checkingGrid = false
         this.started = false
@@ -96,6 +96,7 @@ export class Game {
 
     setLevel() {
         this.level = 1 + Math.floor(this.linesCleared / 10)
+        this.fallSpeed = FALL_SPEEDS[this.level - 1] ?? 1
     }
 
     checkLines() {
@@ -145,7 +146,7 @@ export class Game {
         }
 
         this.updateScore(scoreIncrease)
-        
+
         this.comboCount++
         this.updateNumLines(numLines)
 
@@ -155,45 +156,21 @@ export class Game {
     }
 
     update() {
-        if ($.frameCount % this.fallSpeed === 0 && this.currentShape.canDrop()) {
-            if (!this.input.rotating && this.turn) {
-                this.player.drop()
-            }
-        }
+        if (!this.turn) return
+        if (!this.currentShape.canDrop()) return
+        if ($.frameCount % this.fallSpeed !== 0) return
+
+        this.player.drop()
     }
 
     draw() {
         if (this.gameOver) {
-            $.push()
-
-            $.textStyle($.BOLD)
-            $.textSize(35)
-
-            const width = $.textWidth("GAME OVER")
-            $.text("GAME OVER", cellSize * 5 + gridOffset - width / 2, cellSize * 9)
-
-            $.pop()
+            this.drawGameOverScreen()
             return
         }
 
         if (!this.started && this.isMultiPlayer) {
-            $.background(255)
-
-            $.push()
-            $.fill("black")
-            $.textStyle($.BOLD)
-            $.textSize(28)
-            $.text("Players:", cellSize * 2, cellSize * 2)
-
-            $.textStyle($.NORMAL)
-            $.textSize(24)
-
-            for (let i = 0; i < this.player.users.length; i++) {
-                const user = this.player.users[i]
-                $.text(`${user.userName} ${user.score || ""}`, cellSize * 2, cellSize * (i + 3))
-            }
-
-            $.pop()
+            this.drawRoomScreen()
             return
         }
 
@@ -201,52 +178,11 @@ export class Game {
             this.update()
         }
 
-        $.background(220)
-        $.strokeWeight(.1)
-
-        for (let i = 0; i <= gridX; i++) {
-            $.line(i * cellSize + gridOffset, 0, i * cellSize + gridOffset, gridY * cellSize)
-        }
-
-        for (let i = 0; i <= gridY; i++) {
-            $.line(0 + gridOffset, i * cellSize, gridX * cellSize + gridOffset, i * cellSize)
-        }
-
+        this.drawGrid()
         this.drawShape(this.currentShape)
         this.drawNextShape()
-
-        for (let y = 0; y < gridY; y++) {
-            for (let x = 0; x < gridX; x++) {
-                let block = this.blocks[y][x]
-                if (block === null) {
-                    continue
-                }
-
-                this.drawBlock(block)
-            }
-        }
-
-        $.fill("black")
-        $.textSize(20)
-
-        $.text("LEVEL:", 0, cellSize)
-        $.text(this.level, 0, cellSize * 2)
-
-        $.text("LINES:", 0, cellSize * 3)
-        $.text(this.linesCleared, 0, cellSize * 4)
-
-        $.text("SCORE:", 0, cellSize * 5)
-
-        if (this.isMultiPlayer) {
-            let i = 0
-            for (const user of this.player.users) {
-                $.text(`${user.userName}:`, 0, cellSize * (6 + i * 2))
-                $.text(`${user.score}`, 0, cellSize * (7 + i * 2))
-                i++
-            }
-        } else {
-            $.text(`${this.player.users[0].score}`, 0, cellSize * 6)
-        }
+        this.drawScores()
+        this.drawPopups()
 
         if (!this.turn) {
             $.push()
@@ -259,19 +195,30 @@ export class Game {
 
             $.pop()
         }
+    }
 
-        $.push()
+    drawGrid() {
+        $.background(220)
+        $.strokeWeight(.1)
 
-        $.textStyle($.BOLD)
-        $.textSize(25)
-
-        for (let i = 0; i < this.popupTexts.length; i++) {
-            const text = this.popupTexts[i]
-            const width = $.textWidth(text)
-            $.text(text, cellSize * 5 + gridOffset - width / 2, cellSize * (i + 10))
+        for (let i = 0; i <= gridX; i++) {
+            $.line(i * cellSize + gridOffset, 0, i * cellSize + gridOffset, gridY * cellSize)
         }
 
-        $.pop()
+        for (let i = 0; i <= gridY; i++) {
+            $.line(0 + gridOffset, i * cellSize, gridX * cellSize + gridOffset, i * cellSize)
+        }
+
+        for (let y = 0; y < gridY; y++) {
+            for (let x = 0; x < gridX; x++) {
+                let block = this.blocks[y][x]
+                if (block === null) {
+                    continue
+                }
+
+                this.drawBlock(block)
+            }
+        }
     }
 
     drawShape(shape: Shape) {
@@ -306,9 +253,80 @@ export class Game {
         $.pop()
     }
 
+    drawScores() {
+        $.fill("black")
+        $.textSize(20)
+
+        $.text("LEVEL:", 0, cellSize)
+        $.text(this.level, 0, cellSize * 2)
+
+        $.text("LINES:", 0, cellSize * 3)
+        $.text(this.linesCleared, 0, cellSize * 4)
+
+        $.text("SCORE:", 0, cellSize * 5)
+
+        if (this.isMultiPlayer) {
+            let i = 0
+            for (const user of this.player.users) {
+                $.text(`${user.userName}:`, 0, cellSize * (6 + i * 2))
+                $.text(`${user.score}`, 0, cellSize * (7 + i * 2))
+                i++
+            }
+        } else {
+            $.text(`${this.player.users[0].score}`, 0, cellSize * 6)
+        }
+    }
+
+    drawPopups() {
+        $.push()
+
+        $.textStyle($.BOLD)
+        $.textSize(25)
+
+        for (let i = 0; i < this.popupTexts.length; i++) {
+            const text = this.popupTexts[i]
+            const width = $.textWidth(text)
+            $.text(text, cellSize * 5 + gridOffset - width / 2, cellSize * (i + 10))
+        }
+
+        $.pop()
+    }
+
     drawBlock(block: Block) {
         $.fill(block.color)
         $.rect(block.pos.x * cellSize + gridOffset, block.pos.y * cellSize, cellSize)
+    }
+
+    drawGameOverScreen() {
+        $.push()
+
+        $.textStyle($.BOLD)
+        $.textSize(35)
+
+        const width = $.textWidth("GAME OVER")
+        $.text("GAME OVER", cellSize * 5 + gridOffset - width / 2, cellSize * 9)
+
+        $.pop()
+    }
+
+    drawRoomScreen() {
+        $.background(255)
+
+        $.push()
+        $.fill("black")
+        $.textStyle($.BOLD)
+        $.textSize(28)
+        $.text("Players:", cellSize * 2, cellSize * 2)
+
+        $.textStyle($.NORMAL)
+        $.textSize(24)
+
+        for (let i = 0; i < this.player.users.length; i++) {
+            const user = this.player.users[i]
+            $.text(`${user.userName} ${user.score || ""}`, cellSize * 2, cellSize * (i + 3))
+        }
+
+        $.pop()
     }
 
     /**
@@ -318,13 +336,12 @@ export class Game {
     checkGrid() {
         if (this.currentShape.canDrop()) return
 
-        // Short timeout to give the player the chance to maneuver the block
-        // when it's touching the ground
+        // Lock delay
         if (this.turn && !this.checkingGrid) {
             this.checkingGrid = true
             setTimeout(() => {
                 this.finishTurn()
-            }, 600)
+            }, 500)
         }
     }
 
@@ -368,3 +385,5 @@ class Block {
         public color: Color,
     ) { }
 }
+
+const FALL_SPEEDS = [60, 48, 37, 28, 21, 15, 11, 8, 6, 4, 3, 2, 1]
