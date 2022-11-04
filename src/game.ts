@@ -127,16 +127,10 @@ export class Game {
             return
         }
 
-        let scoreIncrease = (numLines === 4 ?
-            800 : numLines === 3 ?
-                500 : numLines === 2 ?
-                    300 : 100) * this.level
+        let scoreIncrease = SCORE_INCREASE[numLines] * this.level
+        const scoreText = SCORE_TEXTS[numLines]
 
         this.popupTexts = []
-        const scoreText = (numLines === 4 ?
-            "Tetris" : numLines === 3 ?
-                "Triple" : numLines === 2 ?
-                    "Double" : "Single")
         this.popupTexts.push(`${scoreText} + ${scoreIncrease}`)
 
         if (this.comboCount > 0 && !this.isMultiPlayer) {
@@ -145,9 +139,8 @@ export class Game {
             scoreIncrease += comboIncrease
         }
 
-        this.updateScore(scoreIncrease)
-
         this.comboCount++
+        this.updateScore(scoreIncrease)
         this.updateNumLines(numLines)
 
         setTimeout(() => {
@@ -238,6 +231,7 @@ export class Game {
         $.translate(cellSize * gridX + gridOffset * 1.5, 0)
         $.textAlign($.CENTER)
         $.textSize(20)
+        $.fill("black")
         $.text("NEXT", 0, cellSize)
         $.pop()
 
@@ -254,6 +248,8 @@ export class Game {
     }
 
     drawScores() {
+        $.push()
+
         $.fill("black")
         $.textSize(20)
 
@@ -275,6 +271,8 @@ export class Game {
         } else {
             $.text(`${this.player.users[0].score}`, 0, cellSize * 6)
         }
+
+        $.pop()
     }
 
     drawPopups() {
@@ -386,4 +384,6 @@ class Block {
     ) { }
 }
 
+const SCORE_INCREASE = [100, 300, 500, 800]
+const SCORE_TEXTS = ["Single", "Double", "Tripe", "Tetris"]
 const FALL_SPEEDS = [60, 48, 37, 28, 21, 15, 11, 8, 6, 4, 3, 2, 1]
