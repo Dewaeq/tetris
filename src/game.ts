@@ -182,6 +182,7 @@ export class Game {
 
             $.textStyle($.BOLD)
             $.textSize(35)
+            $.fill(0)
 
             const width = $.textWidth("SPECTATING")
             $.text("SPECTATING", cellSize * 5 + gridOffset - width / 2, cellSize * 9)
@@ -357,7 +358,6 @@ export class Game {
 
     setNextShape(id: number) {
         this.input.clearIntervals()
-        this.input.disable()
 
         for (const block of this.currentShape.blocks) {
             let blockPos = this.currentShape.blockPos(block)
@@ -374,7 +374,6 @@ export class Game {
         } else {
             this.player.endTurn()
             this.checkingGrid = false
-            this.input.enable()
         }
     }
 }

@@ -55,6 +55,9 @@ export class MultiPlayer extends Player {
         }
 
         const ourTurn = data.starterId === this.socket.id
+        if (!ourTurn) {
+            this.game.input.disable()
+        }
         this.currentPlayer = this.users.findIndex(u => u.id === data.starterId)
 
         this.game.init()
@@ -124,6 +127,9 @@ export class MultiPlayer extends Player {
 
         if (this.socket.id === this.users[this.currentPlayer].id) {
             this.game.turn = true
+            this.game.input.enable()
+        } else {
+            this.game.input.disable()
         }
     }
 

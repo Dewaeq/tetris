@@ -36,6 +36,7 @@ export class Input {
         })
 
         const pauseBtn = $.createButton("Pause")
+        pauseBtn.id("btn-pause")
         pauseBtn.mousePressed(() => this.input(InputType.Pause))
     }
 
@@ -50,10 +51,24 @@ export class Input {
 
     enable() {
         this.enabled = true
+
+        document.getElementById("btn-left")?.removeAttribute("disabled")
+        document.getElementById("btn-right")?.removeAttribute("disabled")
+        document.getElementById("btn-up")?.removeAttribute("disabled")
+        document.getElementById("btn-down")?.removeAttribute("disabled")
+        document.getElementById("btn-down")?.removeAttribute("disabled")
+        document.getElementById("btn-pause")?.removeAttribute("disabled")
     }
 
     disable() {
         this.enabled = false
+
+        document.getElementById("btn-left")?.setAttribute("disabled", "true")
+        document.getElementById("btn-right")?.setAttribute("disabled", "true")
+        document.getElementById("btn-up")?.setAttribute("disabled", "true")
+        document.getElementById("btn-down")?.setAttribute("disabled", "true")
+        document.getElementById("btn-down")?.setAttribute("disabled", "true")
+        document.getElementById("btn-pause")?.setAttribute("disabled", "true")
     }
 
     keyPressed(): void {

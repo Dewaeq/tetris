@@ -37,11 +37,15 @@ button {
     box-sizing: content-box;
 }
 
-button:hover {
+button:enabled:hover {
     background-color: white;
     color: #774bd0;
     border: 2px solid #774bd0;
     box-sizing: content-box;
+}
+
+button:disabled {
+    background-color: grey;
 }
 
 a {
