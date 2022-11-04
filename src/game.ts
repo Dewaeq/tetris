@@ -127,8 +127,8 @@ export class Game {
             return
         }
 
-        let scoreIncrease = SCORE_INCREASE[numLines] * this.level
-        const scoreText = SCORE_TEXTS[numLines]
+        let scoreIncrease = SCORE_INCREASE[numLines - 1] * this.level
+        const scoreText = SCORE_TEXTS[numLines - 1]
 
         this.popupTexts = []
         this.popupTexts.push(`${scoreText} + ${scoreIncrease}`)
@@ -280,6 +280,7 @@ export class Game {
 
         $.textStyle($.BOLD)
         $.textSize(25)
+        $.fill("black")
 
         for (let i = 0; i < this.popupTexts.length; i++) {
             const text = this.popupTexts[i]
