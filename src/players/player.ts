@@ -12,13 +12,11 @@ export abstract class Player {
 
     abstract updateScore(value: number): void
 
+    abstract setNextShape(): void
+
     startGame(): void {}
 
     endTurn(): void {}
-
-    setNextShape(id: number): void {
-        this.game.setNextShape(id)
-    }
 
     updateNumLines(value: number): void {
         this.game.linesCleared += value

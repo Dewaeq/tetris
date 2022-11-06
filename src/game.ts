@@ -15,6 +15,10 @@ export class Game {
     currentShape: Shape
     nextShape: Shape
 
+    bagIndex: number
+    bag: number[]
+    nextBag: number[]
+
     isMultiPlayer: boolean = false
     turn: boolean = false
     started: boolean = false
@@ -35,8 +39,13 @@ export class Game {
         this.isMultiPlayer = isMultiPlayer
         this.blocks = new Array(gridY).fill(null).map(_ => new Array(gridX).fill(null))
 
-        this.currentShape = Shapes.Random(this.grid)
-        this.nextShape = Shapes.Random(this.grid)
+        this.currentShape = Shapes.GetShape(1, this.grid)
+        this.nextShape = Shapes.GetShape(1, this.grid)
+
+        this.bagIndex = 0
+        this.bag = Shapes.GetBag()
+        this.nextBag = Shapes.GetBag()
+        this.setShapes()
 
         this.player.init()
     }
@@ -53,6 +62,8 @@ export class Game {
         this.linesCleared = 0
         this.comboCount = 0
         this.popupTexts = []
+
+        this.bag = []
 
         this.grid.clear()
     }
@@ -341,22 +352,22 @@ export class Game {
         if (this.turn && !this.checkingGrid) {
             this.checkingGrid = true
             setTimeout(() => {
-                this.finishTurn()
+                this.lockBlock()
             }, 500)
         }
     }
 
-    finishTurn() {
+    lockBlock() {
         if (!this.turn) return
 
         if (this.currentShape.canDrop()) {
             this.checkingGrid = false
         } else {
-            this.player.setNextShape($.floor($.random(7)))
+            this.player.setNextShape()
         }
     }
 
-    setNextShape(id: number) {
+    setNextShape(nextBag?: number[]) {
         this.input.clearIntervals()
 
         for (const block of this.currentShape.blocks) {
@@ -366,8 +377,13 @@ export class Game {
 
         this.checkLines()
 
-        this.currentShape = this.nextShape
-        this.nextShape = Shapes.GetShape(id, this.grid)
+        if (nextBag) {
+            this.setBag(nextBag)
+        } else {
+            this.bagIndex++
+        }
+
+        this.setShapes()
 
         if (!this.currentShape.canDrop() && this.started) {
             this.stop()
@@ -375,6 +391,26 @@ export class Game {
             this.player.endTurn()
             this.checkingGrid = false
         }
+    }
+
+    setBag(nextBag: number[]) {
+        this.bag = this.nextBag
+        this.nextBag = nextBag
+        this.bagIndex = 0
+    }
+    
+    setShapes() {
+        this.currentShape = Shapes.GetShape(this.currentShapeId, this.grid)
+        this.nextShape = Shapes.GetShape(this.nextShapeId, this.grid)
+    }
+
+
+    public get currentShapeId(): number {
+        return this.bag[this.bagIndex]
+    }
+
+    public get nextShapeId(): number {
+        return this.bag[this.bagIndex + 1] ?? this.nextBag[0]
     }
 }
 

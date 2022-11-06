@@ -63,8 +63,9 @@ export class MultiPlayer extends Player {
 
         this.game.init()
 
-        this.game.currentShape = Shapes.GetShape(data.currentShapeId, this.game.grid)
-        this.game.nextShape = Shapes.GetShape(data.nextShapeId, this.game.grid)
+        this.game.bag = data.bag
+        this.game.nextBag = data.nextBag
+        this.game.setShapes()
 
         this.game.turn = ourTurn
         this.game.start()
@@ -73,7 +74,7 @@ export class MultiPlayer extends Player {
     private onUpdate(update: any) {
         switch (update.type) {
             case "NEXT_SHAPE":
-                this.game.setNextShape(update.shapeId)
+                this.game.setNextShape(update.nextBag)
                 break
             case "DROP":
                 this.game.currentShape.drop()
@@ -118,9 +119,11 @@ export class MultiPlayer extends Player {
         this.socket.emit("start")
     }
 
-    override setNextShape(id: number): void {
-        this.update("NEXT_SHAPE", { shapeId: id })
-        super.setNextShape(id)
+    override setNextShape(): void {
+        const nextBag = this.game.bagIndex === 6 ? Shapes.GetBag() : undefined;
+
+        this.update("NEXT_SHAPE", { nextBag: nextBag })
+        this.game.setNextShape(nextBag)
     }
 
     override endTurn(): void {

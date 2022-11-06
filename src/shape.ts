@@ -190,9 +190,7 @@ export class Shapes {
         return shape
     }
 
-    static Random(grid: Grid): Shape {
-        const index = $.floor($.random(7))
-        
-        return this.GetShape(index, grid)
+    static GetBag(): number[] {
+        return $.shuffle([0, 1, 2, 3, 4, 5, 6])
     }
 }
